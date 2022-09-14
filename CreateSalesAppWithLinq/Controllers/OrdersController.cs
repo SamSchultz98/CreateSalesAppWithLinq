@@ -55,6 +55,14 @@ namespace CreateSalesAppWithLinq.Controllers
             _context.Remove(OrderId);
             await _context.SaveChangesAsync();
         }
-
+        public async Task<IEnumerable<Order?>> GetOrderByCus(int CustomerId)
+        {
+            return await _context.Orders.Where(o => o.CustomerId == CustomerId).ToListAsync();
+            //How to do it with query syntax
+            //var orders = from o in _context.Orders
+            //where o.CustomerId == CustomerId
+            //select o;
+            //return await orders.ToListAsync();
+        }
     }
 }
