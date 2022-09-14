@@ -22,7 +22,10 @@ namespace CreateSalesAppWithLinq.Models
         public int MyProperty { get; set; }
 
 
-
+        public override string ToString()
+        {
+            return $"{Name}";
+        }
 
 
     }

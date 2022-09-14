@@ -13,10 +13,14 @@ namespace CreateSalesAppWithLinq.Controllers
     {
         AppDbContext _context = null!;
 
-        OrderlinesController(AppDbContext context)
+    private OrdersController _ordersController;
+
+       public OrderlinesController(AppDbContext context)
         {
             _context = context;
+            OrdersController _ordersController = new(context);
         }
+        
 
         public async Task<IEnumerable<Orderline?>> GetAll()
         {
@@ -36,6 +40,7 @@ namespace CreateSalesAppWithLinq.Controllers
             }
             _context.Orderlines.Add(orderline);
             await _context.SaveChangesAsync();
+            await OrderTotalUpdate(orderline.Id);
             return orderline;
         }
         public async Task Update(int Id, Orderline orderline) 
@@ -47,6 +52,7 @@ namespace CreateSalesAppWithLinq.Controllers
             }
             _context.Entry(Id).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            await OrderTotalUpdate(orderline.OrderId);
         }
         public async Task Delete(int Id)
         {
@@ -58,9 +64,68 @@ namespace CreateSalesAppWithLinq.Controllers
             }
             _context.Orderlines.Remove(_orderline);
             await _context.SaveChangesAsync();
+            await OrderTotalUpdate(_orderline.OrderId);
 
         }
 
-       
+        private async Task OrderTotalUpdate(int orderid)            //which order do you want to do this for
+        {
+            var order = await _ordersController.GetByPk(orderid);
+            if (order is null)
+            {
+                throw new ArgumentException("Order not found");
+            }
+            order.Total = (from ol in _context.Orderlines
+                             join p in _context.Products
+                             on ol.ProductId equals p.Id
+                             where ol.OrderId == orderid
+                             select new {linetotal= ol.Quantity * p.MyProperty }).Sum(x=>x.linetotal);               //MyProperty is price
+
+            await _ordersController.Update(order.Id,order);
+            
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //public async Task<IEnumerable<Orderline?>> GetByProductId(int productId)
+        //{
+        //    /* var _proId = from ol in _context.Orderlines
+        //                join p in _context.Products
+        //                on ol.ProductId equals p.Id
+        //                where p.Id == productId
+        //                select ol;
+        //    */
+        //    var _proId = from p in _context.Products
+        //                 join ol in _context.Orderlines
+        //                 on p.Id equals ol.ProductId
+        //                 join o in _context.Orders
+        //                 on ol.OrderId equals o.Id
+        //                 where productId == p.Id
+        //                 select p;
+
+        //    return _proId.ToListAsync();
+
+        //}
+
+
     }
 }

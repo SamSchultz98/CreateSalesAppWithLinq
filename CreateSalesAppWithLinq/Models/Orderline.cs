@@ -24,5 +24,10 @@ namespace CreateSalesAppWithLinq.Models
         public int Quantity { get; set; } = 1;
 
 
+        public override string ToString()
+        {
+            return $"{ProductId}, {OrderId}";
+        }
+
     }
 }
